@@ -1,8 +1,10 @@
 package com.lojaIsac.Loja_Isac.controller;
 
 import com.lojaIsac.Loja_Isac.constants.ConstantsImagens;
+import com.lojaIsac.Loja_Isac.model.Imagem;
 import com.lojaIsac.Loja_Isac.model.Produto;
 import com.lojaIsac.Loja_Isac.repository.CategoriaRepository;
+import com.lojaIsac.Loja_Isac.repository.ImagemRepository;
 import com.lojaIsac.Loja_Isac.repository.MarcaRepository;
 import com.lojaIsac.Loja_Isac.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +20,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static com.lojaIsac.Loja_Isac.constants.ConstantsImagens.CAMINHO_PASTA_IMAGENS;
 
 @Controller
 @RequestMapping("/administrativo/produtos")
 public class ProdutoController {
 
     ConstantsImagens constantsImagens;
+
+    @Autowired
+    private ImagemRepository imagemRepository;
 
     @Autowired
     private ProdutoRepository produtoRepository;
@@ -47,7 +56,18 @@ public class ProdutoController {
     @GetMapping("/listar")
     public ModelAndView listar() {
         ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
-        return mv.addObject("listaProdutos", produtoRepository.findAll());
+        List<Imagem> imagens = imagemRepository.findAll();
+        List<Produto> produtos = produtoRepository.findAll();
+
+        for (Imagem img : imagens) {
+            for(Produto prod: produtos){
+                if(img.getProduto().equals(prod)){
+                    prod.setNomeImagem(img.getNome());
+                }
+            }
+        }
+        mv.addObject("listaProdutos", produtos);
+        return mv;
     }
 
     @GetMapping("/editar/{id}")
@@ -67,7 +87,7 @@ public class ProdutoController {
     @GetMapping("/mostrarImagem/{imagem}")
     public byte[] retornarImagem(@PathVariable("imagem") String imagem) {
         if (imagem != null || imagem.trim().length() > 0) {
-            File imagemArquivo = new File(constantsImagens.CAMINHO_PASTA_IMAGENS + imagem);
+            File imagemArquivo = new File(CAMINHO_PASTA_IMAGENS + imagem);
             try {
                 return Files.readAllBytes(imagemArquivo.toPath());
             } catch (IOException e) {
@@ -79,7 +99,7 @@ public class ProdutoController {
 
 
     @PostMapping("/salvar")
-    public ModelAndView salvar(@Validated Produto produto, BindingResult result, @RequestParam("file") MultipartFile arquivo) {
+    public ModelAndView salvar(@Validated Produto produto, BindingResult result, @RequestParam("file") List<MultipartFile> arquivo) {
 
         if (result.hasErrors()) {
             return cadastrar(produto);
@@ -88,18 +108,19 @@ public class ProdutoController {
         try {
 
             if (!arquivo.isEmpty()) {
-                byte[] bytes = arquivo.getBytes();
-
-                // Caminho onde a imagem vai ser salva
-                Path caminho = Paths.get(constantsImagens.CAMINHO_PASTA_IMAGENS + String.valueOf(produto.getId()) + arquivo.getOriginalFilename());
-                Files.write(caminho, bytes);
-
-                // Salva no banco de dados a imagem com tal nome
-                produto.setNomeImagem(String.valueOf(produto.getId()) + arquivo.getOriginalFilename());
-
+                Imagem imagem = new Imagem();
+                //Salvou Produto
                 produtoRepository.saveAndFlush(produto);
+                for (MultipartFile file : arquivo) {
+                    byte[] bytes = file.getBytes();
+                    // Caminho onde a imagem vai ser salva
+                    Path caminho = Paths.get(CAMINHO_PASTA_IMAGENS + String.valueOf(produto.getId()) + file.getOriginalFilename());
+                    Files.write(caminho, bytes);
+                    imagem.setNome(String.valueOf(produto.getId() + file.getOriginalFilename()));
+                    imagem.setProduto(produto);
+                    imagemRepository.saveAndFlush(imagem);
+                }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,5 +128,4 @@ public class ProdutoController {
 
         return cadastrar(new Produto());
     }
-
 }
