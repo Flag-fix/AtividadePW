@@ -3,12 +3,10 @@ package com.lojaIsac.Loja_Isac.controller;
 import com.lojaIsac.Loja_Isac.model.Funcionario;
 import com.lojaIsac.Loja_Isac.repository.CidadeRepository;
 import com.lojaIsac.Loja_Isac.repository.FuncionarioRepository;
-import com.lojaIsac.Loja_Isac.service.EnviarEmailService;
-import com.lojaIsac.Loja_Isac.validacaoCPF.ValidarCPF;
+import com.lojaIsac.Loja_Isac.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +29,7 @@ public class FuncionarioController {
     private CidadeRepository cidadeRepository;
 
     @Autowired
-    private EnviarEmailService enviarEmailService;
+    private EmailService enviarEmailService;
 
     @GetMapping("/cadastrar")
     public ModelAndView cadastrar(Funcionario funcionario) {

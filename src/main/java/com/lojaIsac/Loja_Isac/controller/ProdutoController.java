@@ -1,12 +1,15 @@
 package com.lojaIsac.Loja_Isac.controller;
 
 import com.lojaIsac.Loja_Isac.constants.Constants;
+import com.lojaIsac.Loja_Isac.model.Categoria;
 import com.lojaIsac.Loja_Isac.model.Imagem;
+import com.lojaIsac.Loja_Isac.model.Marca;
 import com.lojaIsac.Loja_Isac.model.Produto;
 import com.lojaIsac.Loja_Isac.repository.CategoriaRepository;
 import com.lojaIsac.Loja_Isac.repository.ImagemRepository;
 import com.lojaIsac.Loja_Isac.repository.MarcaRepository;
 import com.lojaIsac.Loja_Isac.repository.ProdutoRepository;
+import com.lojaIsac.Loja_Isac.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -20,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,29 +47,15 @@ public class ProdutoController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Autowired
+    private ProdutoService prodosService;
+
     @GetMapping("/cadastrar")
     public ModelAndView cadastrar(Produto produto) {
         ModelAndView mv = new ModelAndView("administrativo/produtos/cadastro");
         mv.addObject("produto", produto);
         mv.addObject("listaMarcas", marcaRepository.findAll());
         mv.addObject("listaCategorias", categoriaRepository.findAll());
-        return mv;
-    }
-
-    @GetMapping("/listar")
-    public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
-        List<Imagem> imagens = imagemRepository.findAll();
-        List<Produto> produtos = produtoRepository.findAll();
-
-        for (Imagem img : imagens) {
-            for(Produto prod: produtos){
-                if(img.getProduto().equals(prod)){
-                    prod.setNomeImagem(img.getNome());
-                }
-            }
-        }
-        mv.addObject("listaProdutos", produtos);
         return mv;
     }
 
@@ -123,8 +113,54 @@ public class ProdutoController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
         return cadastrar(new Produto());
     }
+
+    @GetMapping("/listar")
+    public ModelAndView listar() {
+        ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
+        List<Produto> produtos = produtoRepository.findAll();
+        prodosService.listarImagensProdutos(produtos);
+        mv.addObject("listaProdutos", produtos);
+        return mv;
+    }
+
+    @GetMapping("/listar/descricao")
+    public ModelAndView listarPorDescricao(String descricao) {
+        ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
+        List<Produto> produtos = produtoRepository.findByDescricao(descricao);
+        prodosService.listarImagensProdutos(produtos);
+        mv.addObject("listaProdutos", produtos);
+        return mv;
+    }
+
+    @GetMapping("/listar/categoria") //TODO - TENTA IMPLEMENTA NUM SERVICE
+    public ModelAndView listarPorCategoria(String nome) {
+
+        List<Categoria> listCategoria =  categoriaRepository.findByNome(nome);
+        List<Produto> listProduto = new ArrayList<>();
+
+        for(Categoria categoria : listCategoria){
+            listProduto = produtoRepository.findByCategoria(categoria);
+        }
+        prodosService.listarImagensProdutos(listProduto);
+        ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
+        mv.addObject("listaProdutos",  listProduto);
+        return mv;
+    }
+
+    @GetMapping("/listar/marca")
+    public ModelAndView listarPorMarca(String nome) {
+        List<Produto> listProduto = new ArrayList<>();
+        List<Marca> listMarca = marcaRepository.findByNome(nome);
+
+        for(Marca marca : listMarca){
+            listProduto = produtoRepository.findByMarca(marca);
+        }
+        prodosService.listarImagensProdutos(listProduto);
+        ModelAndView mv = new ModelAndView("administrativo/produtos/lista");
+        mv.addObject("listaProdutos", listProduto);
+        return mv;
+    }
+
 }

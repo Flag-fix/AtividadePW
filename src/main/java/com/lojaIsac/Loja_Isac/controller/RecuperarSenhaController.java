@@ -2,7 +2,7 @@ package com.lojaIsac.Loja_Isac.controller;
 
 import com.lojaIsac.Loja_Isac.model.Funcionario;
 import com.lojaIsac.Loja_Isac.repository.FuncionarioRepository;
-import com.lojaIsac.Loja_Isac.service.EnviarEmailService;
+import com.lojaIsac.Loja_Isac.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -21,7 +21,7 @@ public class RecuperarSenhaController {
 
 
     @Autowired
-    private EnviarEmailService enviarEmailService;
+    private EmailService enviarEmailService;
 
     @Autowired
     private FuncionarioRepository funcionarioRepository;
