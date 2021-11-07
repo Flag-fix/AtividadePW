@@ -3,6 +3,7 @@ package com.lojaIsac.Loja_Isac.controller;
 import com.lojaIsac.Loja_Isac.model.Funcionario;
 import com.lojaIsac.Loja_Isac.repository.CidadeRepository;
 import com.lojaIsac.Loja_Isac.repository.FuncionarioRepository;
+import com.lojaIsac.Loja_Isac.service.EnviarEmailService;
 import com.lojaIsac.Loja_Isac.validacaoCPF.ValidarCPF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,9 @@ public class FuncionarioController {
 
     @Autowired
     private CidadeRepository cidadeRepository;
+
+    @Autowired
+    private EnviarEmailService enviarEmailService;
 
     @GetMapping("/cadastrar")
     public ModelAndView cadastrar(Funcionario funcionario) {
@@ -63,8 +67,8 @@ public class FuncionarioController {
                 return cadastrar(funcionario);
             }
             funcionario.setSenha(new BCryptPasswordEncoder().encode(funcionario.getSenha()));
-
             funcionarioRepositorio.saveAndFlush(funcionario);
+            enviarEmailService.enviar(funcionario.getEmail(), "Dados Cadastrais", "A sua senha cadastrada foi "+funcionario.getSenha());
             return cadastrar(new Funcionario());
     }
 

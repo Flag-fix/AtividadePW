@@ -1,6 +1,6 @@
 package com.lojaIsac.Loja_Isac.controller;
 
-import com.lojaIsac.Loja_Isac.constants.ConstantsImagens;
+import com.lojaIsac.Loja_Isac.constants.Constants;
 import com.lojaIsac.Loja_Isac.model.Imagem;
 import com.lojaIsac.Loja_Isac.model.Produto;
 import com.lojaIsac.Loja_Isac.repository.CategoriaRepository;
@@ -20,17 +20,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.lojaIsac.Loja_Isac.constants.ConstantsImagens.CAMINHO_PASTA_IMAGENS;
+import static com.lojaIsac.Loja_Isac.constants.Constants.CAMINHO_PASTA_IMAGENS;
 
 @Controller
 @RequestMapping("/administrativo/produtos")
 public class ProdutoController {
 
-    ConstantsImagens constantsImagens;
+    Constants constantsImagens;
 
     @Autowired
     private ImagemRepository imagemRepository;
